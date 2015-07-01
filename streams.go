@@ -18,20 +18,17 @@ type Consumerable interface {
 	Consumer() Consumer
 }
 
-// merge combines the events of two separate Producers
-func merge(s1, s2 Producer) Producer {
+// merge combines the events of separate Producers
+func merge(streams ...Producer) Producer {
 	p := make(Producer)
 
-	go func() {
-		for {
-			select {
-			case e := <-s1:
-				p <- e
-			case e := <-s2:
-				p <- e
+	for _, s := range streams {
+		go func(stream, master Producer) {
+			for e := range stream {
+				master <- e
 			}
-		}
-	}()
+		}(s, p)
+	}
 
 	return p
 }
