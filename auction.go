@@ -7,6 +7,10 @@ import (
 	"github.com/elos/models"
 )
 
+type Potentiality interface {
+	Grant()
+}
+
 type Bid struct {
 	Action    *models.Action
 	Salience  float64
@@ -14,9 +18,7 @@ type Bid struct {
 }
 
 type Auction struct {
-	autonomous.Life
-	autonomous.Managed
-	autonomous.Stopper
+	*autonomous.Core
 
 	Leaders chan *Bid
 	*PriorityQueue
@@ -31,12 +33,12 @@ func NewAuction() *Auction {
 	heap.Init(&pq)
 
 	return &Auction{
-		Life:          autonomous.NewLife(),
-		Stopper:       make(autonomous.Stopper),
-		Leaders:       make(chan *Bid),
-		PriorityQueue: &pq,
-		Orders:        make(chan *Bid),
+		Core: autonomous.NewCore(),
+
 		Cancels:       make(chan string),
+		Leaders:       make(chan *Bid),
+		Orders:        make(chan *Bid),
+		PriorityQueue: &pq,
 		books:         make(map[string]*Item),
 	}
 }
